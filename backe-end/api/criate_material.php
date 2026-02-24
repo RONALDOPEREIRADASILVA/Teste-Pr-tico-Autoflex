@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Endpoint para cadastrar novas matérias-primas.
+ *  cadastrar novas matérias-primas.
  */
 
 // 1. Cabeçalhos obrigatórios para uma API JSON
