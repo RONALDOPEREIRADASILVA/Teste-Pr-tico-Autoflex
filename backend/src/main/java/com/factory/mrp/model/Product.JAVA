@@ -1,4 +1,4 @@
-pachage com.factory.mrp.model;
+package com.factory.mrp.model;
 //Folder address.
 
 import jakarta.persistence.*;
