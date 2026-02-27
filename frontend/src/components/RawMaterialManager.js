@@ -1,7 +1,7 @@
 import React, {useState , useEffect} from "react";
 import axios from 'axios';
 
-const RawMaterialMananger = () => {
+const RawMaterialManager = () => {
     const [materials , setMaterials]= useState([]);
     const [formData , setFormData]=useState({name: '', stockQuantity:0});
 
@@ -14,10 +14,18 @@ const RawMaterialMananger = () => {
         setMaterials(res.data);
     };
     const handleSubmit = async (e) =>{
-        e.prevenDefault();
+        e.preventDefault();
+        try{
         await axios.post('http://localhost:8080/api/materials', formData);
-        setMaterials({name:'' , stockQuantity: 0});
+        alert("Material adcionado com sucesso");
+
+        setFormData({name:'' , stockQuantity: 0});
+
         fetchMaterials();
+        alert("Material adcionado com sucesso")
+        }catch(error) {
+            console.error("Erro ao salvar material" , error);
+        }
     };
 
     return(
@@ -63,5 +71,5 @@ const RawMaterialMananger = () => {
 
 };
 
-export default RawMaterialMananger;
+export default RawMaterialManager;
 

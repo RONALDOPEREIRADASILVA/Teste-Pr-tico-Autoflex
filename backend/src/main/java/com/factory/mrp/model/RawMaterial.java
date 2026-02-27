@@ -18,7 +18,7 @@ private String name;
 @Column(name = "stock_quantity", nullable = false)
 private BigDecimal stockQuantity = BigDecimal.ZERO;
 
-//For java to acess data.
+
 public long getId(){
 return id;
 }
@@ -26,6 +26,9 @@ public void setId(long id){
 this.id = id;
 }
 
+public void setId(Long id) {
+    this.id = id;
+}
 public String getName(){
 return name;
 }
@@ -33,7 +36,7 @@ public void setName(String name){
 this.name = name;
 }
 
-public BigDecimal getStockQantity(){
+public BigDecimal getStockQuantity(){
 return stockQuantity;
 }
 public void setStockQuantity(BigDecimal stockQuantity){
