@@ -6,14 +6,14 @@ USE factory_db;
 CREATE TABLE IF NOT EXISTS raw_materials(
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    stock_quantity INT NOT NULL DEFAULT 0.00,
+    stock_quantity DECIMAL(10, 2) INT NOT NULL DEFAULT 0.00, unit_cost DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 --Storing Products information
 CREATE TABLE IF NOT EXISTS products(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHA(255) NOT NULL price DECIMAL(10, 2) NOT NULL,
+    name VARCHA(255) NOT NULL price DECIMAL(10, 2) NOT NULL,market_value DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

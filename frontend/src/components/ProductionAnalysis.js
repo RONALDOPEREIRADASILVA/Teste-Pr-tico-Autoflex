@@ -4,12 +4,15 @@ import axios from "axios";
 
 const ProductionAnalysis = () => {
     const [analysis, setAnalysis] = useState([]);
+    useEffect(() =>{
+        calculateProduction();
+    }, []);
 
     const calculateProduction = async () => {
         try {
             const [prodRes, matRes, ingRes] = await Promise.all([
                 axios.get('http://localhost:8080/api/products'),
-                axios.get('http://localhost:8080/api/materials'),
+                axios.get('http://localhost:8080/api/raw-materials'),
                 axios.get('http://localhost:8080/api/ingredients')
             ]);
 
@@ -47,10 +50,10 @@ const ProductionAnalysis = () => {
                     <div className="col-md-4 mb-3" key={item.id}>
                         <div className="card shadow-sm">
                             <div className="card-body">
-                                <h5 className="card-tetle">{item.name}</h5>
+                                <h5 className="card-title">{item.name}</h5>
                                 <p className="card-text">
                                     <strong>Max Yield:</strong> {item.maxProduction} units<br/>
-                                    <strong>Estimated Revenue:</strong> R$ {item.totalValue.Fixed(2)}
+                                    <strong>Estimated Revenue:</strong> R$ {item.totalValue.toFixed(2)}
                                 </p>
                             </div>
                         </div>

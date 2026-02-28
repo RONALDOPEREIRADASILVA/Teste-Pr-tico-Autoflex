@@ -11,53 +11,44 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-
 @RestController
 @RequestMapping("/api/products")
 @CrossOrigin(origins = "*")
 public class ProductController {
+@Autowired
+private ProductRepository repository;
+@Autowired
+private ProductIngredientRepository ingredientRepository;
+@GetMapping
+public List<Product> getAll() {
+return repository.findAll();
+}
+@PostMapping
+public Product save(@RequestBody Product product) {
+return repository.save(product);
+}
 
-    @Autowired
-    private ProductRepository repository;
-
-    @Autowired
-    private ProductIngredientRepository ingredientRepository;
-
-    @GetMapping
-    public List<Product> getAll() {
-        return repository.findAll();
-    }
-
-    @PostMapping
-    public Product save(@RequestBody Product product) {
-        return repository.save(product);
-    }
-
-    @GetMapping("/analysis")
-    public List<AnalysisDTO> getProductionAnalysis() {
-        List<Product> products = repository.findAll();
+@GetMapping("/analysis")
+public List<AnalysisDTO> getProductionAnalysis() {
+    List<Product> products = repository.findAllByOrderByMarketValueDesc();
         List<AnalysisDTO> analysisResult = new ArrayList<>();
-
         for (Product product : products) {
             List<ProductIngredient> ingredients = ingredientRepository.findByProduct(product);
-            if (ingredients.isEmpty()) {
-                analysisResult.add(new AnalysisDTO(product.getName(), BigDecimal.ZERO));
-                continue;
-            }
-
-            BigDecimal maxPossible = null;
-
-            for (ProductIngredient ingredient : ingredients) {
-                BigDecimal currentStock = ingredient.getRawMaterial().getStockQuantity();
-                BigDecimal usagePerProduct = new BigDecimal("1");
-                BigDecimal possibleUnits = currentStock.divide(usagePerProduct, 0, RoundingMode.FLOOR);
-                if (maxPossible == null || possibleUnits.compareTo(maxPossible) < 0) {
-                    maxPossible = possibleUnits;
+            BigDecimal possibleUnits =null;
+            for (ProductIngredient ing :ingredients){
+                BigDecimal stock = ing.getRawMaterial().getStockQuantity();
+                BigDecimal needed = ing.getQuantityNeeded();
+                BigDecimal canMake = stock.divide( needed , 0, RoundingMode.FLOOR);
+            
+                if (possibleUnits ==null || canMake.compareTo(possibleUnits) <0) {
+                    possibleUnits = canMake;
                 }
             }
-            analysisResult.add(new AnalysisDTO(product.getName(), maxPossible));
+            BigDecimal finalUnits =(possibleUnits == null) ? BigDecimal.ZERO : possibleUnits;
+            BigDecimal totalValue = finalUnits.multiply(product.getPrice());
+
+            analysisResult.add(new AnalysisDTO(product.getName(), finalUnits , totalValue));
         }
         return analysisResult;
-    }
+}
 }

@@ -3,17 +3,12 @@ package com.factory.mrp.controller;
 import com.factory.mrp.model.RawMaterial;
 import com.factory.mrp.repository.RawMaterialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-
-
 
 @RestController
-@RequestMapping("/api/materials")
+@RequestMapping("/api/raw-materials")
 @CrossOrigin(origins = "*")
 public class RawMaterialController {
 
@@ -30,5 +25,9 @@ public class RawMaterialController {
         return repository.save(material);
     }
     
-    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    repository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
