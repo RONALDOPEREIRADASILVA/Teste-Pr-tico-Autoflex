@@ -1,69 +1,50 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchProductionAnalysis } from "../store/productionSlice";
 
 const ProductionAnalysis = () => {
-    const [analysis, setAnalysis] = useState([]);
-    useEffect(() =>{
-        calculateProduction();
-    }, []);
+    const dispatch = useDispatch();
 
-    const calculateProduction = async () => {
-        try {
-            const [prodRes, matRes, ingRes] = await Promise.all([
-                axios.get('http://localhost:8080/api/products'),
-                axios.get('http://localhost:8080/api/raw-materials'),
-                axios.get('http://localhost:8080/api/ingredients')
-            ]);
+    const { analysisData, loading } = useSelector((state) => state.production);
 
-            const suggestion = prodRes.data.map(product => {
-                const productIngredients = ingRes.data.filter(i => i.product.id === product.id);
-                let possibleQuantity = Infinity;
+    useEffect(() => {
+        dispatch(fetchProductionAnalysis());
+    }, [dispatch]);
 
-                productIngredients.forEach(ing => {
-                    const material = matRes.data.find(m => m.id === ing.rawMaterial.id);
-                    if (material) {
-                        const maxForThis = Math.floor(material.stockQuantity / ing.quantityNeeded);
-                        possibleQuantity = Math.min(possibleQuantity, maxForThis);
-                    }
-                });
-                return {
-                    ...product,
-                    maxProduction: possibleQuantity === Infinity ? 0 : possibleQuantity,
-                    totalValue: (possibleQuantity === Infinity ? 0 : possibleQuantity) * product.price
-                };
-            });
-
-            setAnalysis(suggestion.sort((a, b) => b.totalValue - a.totalValue));
-        } catch (error) {
-            console.error('Analysis error:', error);
-        }
-    };
-    return(
+    return (
         <div className="container mt-5">
-            <h2 className="text-primary mb-4">Production Insights (MRP Analysis)</h2>
-            <div className="alert alert-info">
-                This analysis prioritizes items with higher market value.
+            <h2 className="text-primary mb-4 font-weight-bold">Production Analysis (MRP)</h2>
+            
+            <div className="alert alert-warning shadow-sm">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Optimization Note:</strong> Items are prioritized by Market Value to maximize revenue.
             </div>
+
             <div className="row">
-                {analysis.map(item => (
-                    <div className="col-md-4 mb-3" key={item.id}>
-                        <div className="card shadow-sm">
+                {analysisData.map((item, index) => (
+                    <div className="col-md-4 mb-4" key={index}>
+                        <div className={`card h-100 shadow-sm ${item.possibleUnits === 0 ? 'border-danger' : 'border-success'}`}>
+                            <div className="card-header bg-transparent font-weight-bold text-uppercase">
+                                {item.productName}
+                            </div>
                             <div className="card-body">
-                                <h5 className="card-title">{item.name}</h5>
-                                <p className="card-text">
-                                    <strong>Max Yield:</strong> {item.maxProduction} units<br/>
-                                    <strong>Estimated Revenue:</strong> R$ {item.totalValue.toFixed(2)}
-                                </p>
+                                <h4 className="text-center display-4">
+                                    {item.possibleUnits}
+                                </h4>
+                                <p className="text-center text-muted">Units Possible</p>
+                                <hr/>
+                                <div className="d-flex justify-content-between">
+                                    <span>Potential Revenue:</span>
+                                    <span className="font-weight-bold text-success">
+                                        R$ {item.totalValue.toFixed(2)}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-
                 ))}
             </div>
         </div>
-
     );
 };
 

@@ -1,98 +1,138 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchProducts, addProduct } from '../store/productSlice';
+import { fetchMaterials } from '../store/materialSlice';
 
-const RawMaterialManager = () => {
-    const [materials, setMaterials] = useState([]);
+const ProductManager = () => {
+
     const [name, setName] = useState('');
-    const [stock, setStock] = useState(0);
+    const [price, setPrice] = useState(0);
+    const [marketValue, setMarketValue] = useState(0);
 
-    const loadMaterials = async () => {
-        try {
-            const response = await axios.get('http://localhost:8080/api/raw-materials');
-            setMaterials(response.data);
-        } catch (error) {
-            console.error("Error loading materials:", error);
-        }
-    };
+    const [selectedProductId, setSelectedProductId] = useState('');
+    const [selectedMaterialId, setSelectedMaterialId] = useState('');
+    const [quantityNeeded, setQuantityNeeded] = useState(0);
+
+    const dispatch = useDispatch();
+
+    const products = useSelector((state) => state.products.list);
+    const materials = useSelector((state) => state.materials.list);
 
     useEffect(() => {
-        loadMaterials();
-    }, []);
+        dispatch(fetchProducts());
+        dispatch(fetchMaterials());
+    }, [dispatch]);
 
-
-    const handleAdd = async (e) => {
+    const handleAddProduct = (e) => {
         e.preventDefault();
-        try {
-            await axios.post('http://localhost:8080/api/raw-materials', {
-                name,
-                stockQuantity: stock
-            });
-            setName('');
-            setStock(0);
-            loadMaterials();
-            alert("Material added successfully!");
-        } catch (error) {
-            alert("Error adding material.");
-        }
+        dispatch(addProduct({ name, price, marketValue }));
+        setName('');
+        setPrice(0);
+        setMarketValue(0);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this item?")) {
-            try {
-                await axios.delete(`http://localhost:8080/api/raw-materials/${id}`);
-                loadMaterials();
-            } catch (error) {
-                alert("Error deleting: This material might be linked to a product.");
-            }
-        }
+    const handleAddIngredient = (e) => {
+        e.preventDefault();
+
+        console.log("Assocating:", selectedProductId, selectedMaterialId, quantityNeeded);
+        setSelectedMaterialId('');
+        setQuantityNeeded(0);
     };
 
     return (
         <div className="container mt-4">
-            <h3 className="text-primary">Raw Material Stock (Paper Mill)</h3>
-            
-            <form onSubmit={handleAdd} className="mb-4 p-3 border rounded shadow-sm">
-                <div className="row">
-                    <div className="col-md-5">
-                        <input type="text" className="form-control" placeholder="Material Name (e.g. Wood Pulp)"
-                            value={name} onChange={(e) => setName(e.target.value)} required />
-                    </div>
-                    <div className="col-md-4">
-                        <input type="number" className="form-control" placeholder="Initial Stock"
-                        value={stock} onChange={(e) => setStock(e.target.value)} required />
-                    </div>
-                    <div className="col-md-3">
-                        <button type="submit" className="btn btn-success w-100">Add Material</button>
-                    </div>
-                </div>
-            </form>
+            <h3 className="text-primary mb-4 font-weight-bold">Product & BOM Management</h3>
 
-            <table className="table table-hover border">
-                <thead className="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Stock Quantity</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {materials.map(mat => (
-                        <tr key={mat.id}>
-                            <td>{mat.id}</td>
-                            <td>{mat.name}</td>
-                            <td>{mat.stockQuantity} units</td>
-                            <td>
-                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(mat.id)}>
-                                    Delete
-                                </button>
-                            </td>
+            <div className="card shadow-sm mb-4">
+                <div className="card-header bg-dark text-white">1. Add New Product</div>
+                <div className="card-body">
+                    <form onSubmit={handleAddProduct} className="row g-3">
+                        <div className="col-md-4">
+                            <label className="form-label small">Product Name</label>
+                            <input type="text" className="form-control" placeholder="e.g. Paper"
+                                value={name} onChange={(e) => setName(e.target.value)} required />
+                        </div>
+                        <div className="col-md-3">
+                            <label className="form-label small">Production Price</label>
+                            <input type="number" className="form-control"
+                                value={price} onChange={(e) => setPrice(e.target.value)} required />
+                        </div>
+                        <div className="col-md-3">
+                            <label className="form-label small">Market Value</label>
+                            <input type="number" className="form-control"
+                                value={marketValue} onChange={(e) => setMarketValue(e.target.value)} required />
+                        </div>
+                        <div className="col-md-2 align-self-end">
+                            <button type="submit" className="btn btn-primary w-100 shadow-sm">
+                                Create
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+            <div className="card shadow-sm mb-4">
+                <div className="card-header bg-dark text-white">2. Assign Ingredients (Recipe)</div>
+                <div className="card-body bg-light">
+                    <form onSubmit={handleAddIngredient} className="row g-3">
+
+                        <div className="col-md-4">
+                            <label className="form-label small">For Product</label>
+                            <select className="form-control" value={selectedProductId}
+                                onChange={(e) => setSelectedProductId(e.target.value)} required>
+                                <option value="">Select a Product</option>
+                                {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="col-md-4">
+                            <label className="form-label small">Use Raw Material</label>
+                            <select className="form-control" value={selectedMaterialId}
+                                onChange={(e) => setSelectedMaterialId(e.target.value)} required>
+                                <option value="">Select a Material</option>
+                                {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="col-md-2">
+                            <label className="form-label small">Qty Needed</label>
+                            <input type="number" className="form-control"
+                                value={quantityNeeded} onChange={(e) => setQuantityNeeded(e.target.value)} required />
+                        </div>
+                        <div className="col-md-2 align-self-end">
+                            <button type="submit" className="btn btn-success w-100 shadow-sm">
+                                Link
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div className="table-responsive">
+                <table className="table table-hover align-middle border">
+                    <thead className="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Product Description</th>
+                            <th>Cost</th>
+                            <th>Market Value</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {products.map(p => (
+                            <tr key={p.id}>
+                                <td><span className="badge badge-light border text-dark">#{p.id}</span></td>
+                                <td className="font-weight-bold">{p.name}</td>
+                                <td>R$ {p.price}</td>
+                                <td>R$ {p.marketValue}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
 
-export default RawMaterialManager;
+export default ProductManager;
