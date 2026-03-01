@@ -2,7 +2,6 @@ import React from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
 import RawMaterialManager from './components/RawMaterialManager';
 import ProductionAnalysis from './components/ProductionAnalysis';
-import ProductManager from './components/ProductManager'; 
 
 function App() {
   return (
@@ -14,11 +13,7 @@ function App() {
       </nav>
 
       <main className='container pb-5'>
-        <div className='row'>
-          <div className='col-12 mb-5'>
-            <ProductManager />
-          </div>
-        </div>
+        
 
         <hr/>
 

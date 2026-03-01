@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchProducts, addProduct } from '../store/productSlice';
-import { fetchMaterials } from '../store/materialSlice';
+import { fetchProductionAnalysis, addProduct } from '../store/productionSlice';
+
 
 const ProductManager = () => {
 
@@ -15,12 +15,12 @@ const ProductManager = () => {
 
     const dispatch = useDispatch();
 
-    const products = useSelector((state) => state.products.list);
+    const products = useSelector((state) => state.production.analysisData || []);
     const materials = useSelector((state) => state.materials.list);
 
+
     useEffect(() => {
-        dispatch(fetchProducts());
-        dispatch(fetchMaterials());
+        dispatch(fetchProductionAnalysis());
     }, [dispatch]);
 
     const handleAddProduct = (e) => {

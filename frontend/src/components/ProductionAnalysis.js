@@ -4,39 +4,41 @@ import { fetchProductionAnalysis } from "../store/productionSlice";
 
 const ProductionAnalysis = () => {
     const dispatch = useDispatch();
-
-    const { analysisData, loading } = useSelector((state) => state.production);
+    const { analysisData, loading, error } = useSelector((state) => state.production);
 
     useEffect(() => {
+        // Busca os dados assim que a página carrega
         dispatch(fetchProductionAnalysis());
     }, [dispatch]);
 
+    if (loading) return <div className="text-center mt-5">Loading factory data...</div>;
+    if (error) return <div className="alert alert-danger">{error}</div>;
+
     return (
-        <div className="container mt-5">
-            <h2 className="text-primary mb-4 font-weight-bold">Production Analysis (MRP)</h2>
-            
-            <div className="alert alert-warning shadow-sm">
-                <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>Optimization Note:</strong> Items are prioritized by Market Value to maximize revenue.
-            </div>
+        <div className="container mt-4">
+            <h3 className="text-primary mb-3">Suggested Production (MRP)</h3>
+
+            {/* Explicação simples para o usuário final */}
+            <p className="text-muted mb-4">
+                This list shows how many units we can make based on current stock.
+                Higher value products appear first.
+            </p>
 
             <div className="row">
                 {analysisData.map((item, index) => (
-                    <div className="col-md-4 mb-4" key={index}>
-                        <div className={`card h-100 shadow-sm ${item.possibleUnits === 0 ? 'border-danger' : 'border-success'}`}>
-                            <div className="card-header bg-transparent font-weight-bold text-uppercase">
+                    <div className="col-md-6 col-lg-4 mb-4" key={index}>
+                        <div className="card shadow-sm h-100">
+                            <div className="card-header bg-white font-weight-bold">
                                 {item.productName}
                             </div>
                             <div className="card-body">
-                                <h4 className="text-center display-4">
-                                    {item.possibleUnits}
-                                </h4>
-                                <p className="text-center text-muted">Units Possible</p>
-                                <hr/>
-                                <div className="d-flex justify-content-between">
-                                    <span>Potential Revenue:</span>
-                                    <span className="font-weight-bold text-success">
-                                        R$ {item.totalValue.toFixed(2)}
+                                <h2 className="text-center mb-0">{item.possibleUnits}</h2>
+                                <p className="text-center text-muted small">available units</p>
+                                <hr />
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <span className="small text-muted">Total Potential:</span>
+                                    <span className="badge badge-success px-3 py-2">
+                                        R$ {((item.totalValue || 0)).toFixed(2)}
                                     </span>
                                 </div>
                             </div>
